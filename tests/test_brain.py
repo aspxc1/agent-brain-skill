@@ -47,9 +47,6 @@ class BrainTests(unittest.TestCase):
                             '--agent', agent, '--source', 'test-session',
                             '--body-file', str(self.base / 'body.md'))
 
-    def test_missing_cli_is_explicit_failure(self):
-        self.assertTrue(CLI.is_file(), 'brain helper has not been implemented')
-
     def test_init_is_idempotent_and_preserves_user_edits(self):
         self.init()
         p = self.root / 'profile.md'

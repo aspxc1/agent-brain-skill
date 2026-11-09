@@ -7,7 +7,7 @@ brain.local.json
 *.local.json
 *.bak
 .brain.lock/
-Agent-Brain/
+local-memories/
 brain-data/
 .obsidian/
 .env

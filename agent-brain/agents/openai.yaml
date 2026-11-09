@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Brain"
+  short_description: "Shared Markdown memory across agents and harnesses"
+  default_prompt: "Use $agent-brain to recall relevant context and save a concise sourced handoff for this project."
