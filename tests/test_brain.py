@@ -1,6 +1,5 @@
 """Behavioral tests run against isolated temporary brains, never real memories."""
 import concurrent.futures
-import importlib.util
 import json
 import os
 from pathlib import Path
@@ -16,11 +15,14 @@ INSTALL = REPO / 'agent-brain' / 'scripts' / 'install.py'
 
 class BrainTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
+        self.scratch = (REPO / '.test-tmp').resolve()
+        self.scratch.mkdir(exist_ok=True)
+        self.temp = tempfile.TemporaryDirectory(dir=self.scratch)
         self.base = Path(self.temp.name)
         self.root = self.base / 'private-brain'
 
     def tearDown(self):
+        self.assertEqual(self.base.resolve().parent, self.scratch)
         self.temp.cleanup()
 
     def run_cli(self, *args, ok=True, env=None):
@@ -104,7 +106,6 @@ class BrainTests(unittest.TestCase):
                      '--body-file', str(body), ok=False)
         self.run_cli('publish', 'inbox/lantern/replace.md', '--expected-sha', 'missing',
                      '--body-file', str(body), ok=False)
-        self.capture(project='../outside') if False else None
         self.run_cli('capture', '--project', '../outside', '--harness', 'codex',
                      '--agent', 'worker', '--source', 'test', '--body-file', str(body), ok=False)
 
