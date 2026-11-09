@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+brain.local.json
+*.local.json
+*.bak
+.brain.lock/
+Agent-Brain/
+brain-data/
+.obsidian/
+.env
+.env.*
+!.env.example
