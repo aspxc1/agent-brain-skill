@@ -68,8 +68,11 @@ than preserving a superseded copy.
 
 Use `--kind mistake` for a compact record of an actual failed approach, preventable
 error, or user correction that is useful to future work. Record project-specific
-pitfalls under Known pitfalls in `projects/<slug>/overview.md`. Put reusable lessons
-in `mistakes.md`, retaining the conditions under which they apply. The helper can
+pitfalls under Known pitfalls in `projects/<slug>/overview.md`. Alternatively, keep
+one explicitly project-scoped lesson in `mistakes.md` and link it from Known pitfalls;
+the register location does not broaden its scope. Keep the full lesson in one
+canonical location. Put reusable lessons in the register with their applicable
+conditions. The helper can
 create that register with `publish mistakes.md --expected-sha missing` for older
 brains; `init` deliberately leaves existing brains unchanged.
 

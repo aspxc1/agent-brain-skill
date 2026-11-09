@@ -87,8 +87,12 @@ across multiple notes. Inbox notes remain immutable.
 | Explicit, durable user preference | Profile, with scope/source/date |
 | Practice explicitly adopted by the user or existing project policy | Practices: Adopted, with scope/source/date |
 | Inferred preference or a newly suggested practice | Pending contribution or Practices: Proposed |
-| Project-specific failure and prevention | Project overview: Known pitfalls |
+| Project-specific failure and prevention | Project overview: Known pitfalls, or a project-scoped register entry linked there |
 | Reusable lesson from an actual failure, with its applicable conditions | Mistakes register |
+
+Keep each full lesson in one canonical location and link to it from related notes.
+An entry in the shared register retains its stated scope; its location does not
+make it applicable to every project.
 
 A project-only choice stays in that project. Successful use does not by itself
 make a proposed practice adopted. Resolve conflicting user preferences by scope
