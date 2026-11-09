@@ -84,7 +84,8 @@ python -m unittest discover -s tests -v
 Tests use temporary brains under ignored `.test-tmp/`, never real memories. They
 exercise concurrent contributions, revision conflicts, path and symlink escape
 rejection, idempotent initialization, bounded output, pending-note discovery, and
-preservation of existing harness guidance.
+preservation of existing harness guidance, dry-run behavior, and Unicode memory
+round trips through consoles with limited text encodings.
 
 ## Limits and sensible next steps
 

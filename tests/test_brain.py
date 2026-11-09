@@ -1,11 +1,13 @@
 """Behavioral tests run against isolated temporary brains, never real memories."""
 import concurrent.futures
+import importlib.util
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 
 REPO = Path(__file__).resolve().parents[1]
@@ -95,6 +97,25 @@ class BrainTests(unittest.TestCase):
             results = list(pool.map(attempt, range(2)))
         self.assertEqual(sorted(p.returncode == 0 for p in results), [False, True])
 
+    def test_contended_writer_lock_preserves_mutual_exclusion(self):
+        self.init()
+        spec = importlib.util.spec_from_file_location('brain_helper_under_test', CLI)
+        helper = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(helper)
+        state = {'active': 0, 'count': 0, 'overlap': False}
+        def critical_section(_):
+            with helper.writer_lock(self.root.resolve()):
+                state['active'] += 1
+                state['overlap'] |= state['active'] != 1
+                time.sleep(0.001)
+                state['count'] += 1
+                state['active'] -= 1
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+            list(pool.map(critical_section, range(160)))
+        self.assertEqual(state['count'], 160)
+        self.assertFalse(state['overlap'])
+        self.assertFalse((self.root / '.brain.lock').exists())
+
     def test_path_escape_and_immutable_inbox_are_rejected(self):
         self.init()
         body = self.body()
@@ -130,6 +151,24 @@ class BrainTests(unittest.TestCase):
         note = json.loads(self.run_cli('read', rel, '--max-chars', '250').stdout)
         self.assertLessEqual(len(note['content']), 250)
         self.assertTrue(note['truncated'])
+
+    def test_unicode_memory_round_trips_with_ascii_console(self):
+        self.init()
+        text = 'Project summary: \u0645\u0644\u062e\u0635 \u0627\u0644\u0645\u0634\u0631\u0648\u0639 \u2014 \u5b8c\u6210\n'
+        self.body(text)
+        rel = json.loads(self.capture().stdout)['path']
+        console_env = dict(os.environ, PYTHONIOENCODING='ascii')
+        saved = json.loads(self.run_cli('read', rel, env=console_env).stdout)
+        self.assertIn(text.strip(), saved['content'])
+
+    def test_install_dry_run_has_no_side_effects(self):
+        self.init()
+        home = self.base / 'untouched-home'
+        p = subprocess.run([sys.executable, str(INSTALL), '--brain', str(self.root),
+                            '--home', str(home), '--bootstrap', 'codex', 'opencode', '--dry-run'],
+                           text=True, capture_output=True)
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertFalse(home.exists())
 
     def test_install_preserves_unrelated_global_guidance_and_shares_one_root(self):
         self.init()

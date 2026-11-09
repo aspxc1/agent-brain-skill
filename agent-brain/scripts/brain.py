@@ -45,7 +45,7 @@ def confined(root, relative):
         raise ValueError('Use a relative path inside the brain.')
     path = (root / Path(*rel.parts)).resolve()
     if not path.is_relative_to(root) or path == root:
-        raise ValueError('Path escapes the brain root.')
+        raise ValueError(f'Path escapes the brain root: {relative!r} resolved to {path}, root {root}.')
     return path
 
 
@@ -59,15 +59,24 @@ def require_brain(root):
 
 @contextmanager
 def writer_lock(root, timeout=10):
-    lock = confined(root, '.brain.lock')
+    # root is already resolved. Resolving this volatile directory on Windows can
+    # race another writer's rmdir and return an extended-path alias (or hold a
+    # deletion-pending handle). mkdir itself rejects existing links and files.
+    lock = root / '.brain.lock'
     deadline = time.monotonic() + timeout
     while True:
         try:
             lock.mkdir()
             break
-        except FileExistsError:
+        except OSError as error:
+            # Windows may report access denied while the previous directory's
+            # deletion finishes, rather than reporting that the lock exists.
+            busy = isinstance(error, FileExistsError) or (
+                os.name == 'nt' and getattr(error, 'winerror', None) in (5, 32))
+            if not busy:
+                raise
             if time.monotonic() >= deadline:
-                raise ValueError('Brain is locked. Inspect .brain.lock/owner.json; never steal a live lock.')
+                raise ValueError('Cannot acquire brain lock. Inspect permissions and .brain.lock/owner.json; never steal a live lock.') from error
             time.sleep(0.03)
     try:
         (lock / 'owner.json').write_text(json.dumps({
@@ -246,7 +255,8 @@ def main():
                 result = {'root': str(root), 'locked': (root / '.brain.lock').exists(),
                           'projects': len(list((root / 'projects').glob('*/overview.md'))),
                           'contributions': len(list((root / 'inbox').glob('*/*.md')))}
-        print(json.dumps(result, ensure_ascii=False, indent=2))
+        # ASCII-safe JSON survives Windows code pages; json.loads restores Unicode.
+        print(json.dumps(result, ensure_ascii=True, indent=2))
         return 0
     except (ValueError, OSError, KeyError, json.JSONDecodeError) as error:
         print('agent-brain: ' + str(error), file=sys.stderr)
