@@ -6,7 +6,7 @@ The coordinator gives each worker the absolute brain root, project slug,
 task/session identity, relevant source paths, and the allowed write scope.
 Workers may retrieve different topics or summarize their own completed work in
 parallel. Each produces one unique contribution under `inbox/<slug>/`. They do
-not rewrite profile, practices, project overviews, or a shared index.
+not rewrite profile, practices, mistakes, project overviews, or a shared index.
 
 The coordinator acts as curator, or assigns one curator for the project. The
 curator checks sources, merges useful facts, labels reported evidence, and
@@ -14,6 +14,12 @@ publishes each canonical note separately. Independent simultaneous curator
 sessions still use the filesystem lock and expected revision hash. A project
 overview can record which source IDs are already incorporated; pending files
 remain source records and need not all be loaded again.
+
+For failure lessons, workers capture their own source incident with `--kind mistake`.
+The curator merges duplicate reports, preserves project/platform scope, and records
+unverified explanations as suspected. Before delegating a related task, include
+the relevant lesson IDs and prevention checks in the worker's context; do not
+copy the whole mistakes register into every agent prompt.
 
 Example dispatch, adapted to whatever subagent API the harness actually exposes:
 

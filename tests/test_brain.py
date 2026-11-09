@@ -53,8 +53,12 @@ class BrainTests(unittest.TestCase):
         self.init()
         p = self.root / 'profile.md'
         p.write_text('A user-owned fact.\n', encoding='utf-8')
+        mistakes = self.root / 'mistakes.md'
+        self.assertTrue(mistakes.is_file())
+        mistakes.write_text('A user-owned lesson.\n', encoding='utf-8')
         self.init()
         self.assertEqual(p.read_text(encoding='utf-8'), 'A user-owned fact.\n')
+        self.assertEqual(mistakes.read_text(encoding='utf-8'), 'A user-owned lesson.\n')
         self.assertFalse((self.root / '.git').exists())
 
     def test_init_refuses_to_adopt_nonempty_unrelated_folder(self):
@@ -151,6 +155,35 @@ class BrainTests(unittest.TestCase):
         note = json.loads(self.run_cli('read', rel, '--max-chars', '250').stdout)
         self.assertLessEqual(len(note['content']), 250)
         self.assertTrue(note['truncated'])
+
+    def test_mistake_capture_is_pending_until_curated_and_searchable(self):
+        self.init()
+        text = ('# Console encoding lesson\n\nScope: Windows JSON CLI output.\n'
+                'Failure: unicode-console-regression prevents reading notes.\n'
+                'Cause: output encoding cannot represent note text.\n'
+                'Prevention: emit ASCII-safe JSON and test Unicode round trips.\n')
+        body = self.body(text)
+        saved = json.loads(self.run_cli('capture', '--project', 'lantern', '--harness', 'codex',
+            '--agent', 'worker', '--source', 'observed regression output', '--kind', 'mistake',
+            '--evidence', 'observed', '--body-file', str(body)).stdout)
+        self.assertEqual(saved['status'], 'pending')
+        self.assertEqual(json.loads(self.run_cli('search', 'unicode-console-regression').stdout), [])
+        revision = json.loads(self.run_cli('read', 'mistakes.md').stdout)['sha256']
+        self.run_cli('publish', 'mistakes.md', '--expected-sha', revision, '--body-file', str(body))
+        found = json.loads(self.run_cli('search', 'unicode-console-regression', '--project', 'other').stdout)
+        self.assertEqual([x['path'] for x in found], ['mistakes.md'])
+        self.assertFalse(found[0]['pending'])
+
+    def test_existing_brain_can_gain_mistakes_register_without_reinitialization(self):
+        self.init()
+        mistakes = self.root / 'mistakes.md'
+        if mistakes.exists():
+            mistakes.unlink()  # Simulate a brain initialized before mistakes support.
+        profile_before = (self.root / 'profile.md').read_bytes()
+        self.run_cli('publish', 'mistakes.md', '--expected-sha', 'missing',
+                     '--body-file', str(self.body('# Mistakes\n\nNo confirmed lessons yet.\n')))
+        self.assertTrue(mistakes.is_file())
+        self.assertEqual((self.root / 'profile.md').read_bytes(), profile_before)
 
     def test_unicode_memory_round_trips_with_ascii_console(self):
         self.init()

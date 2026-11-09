@@ -8,7 +8,7 @@ in Obsidian, editors, and harness file tools. Relative Markdown links are portab
 
 Required helper fields: `id`, `kind`, `project`, `created_at` (UTC), `harness`,
 `agent`, `source`, `evidence`, and `status: pending`. Kind is session, decision,
-preference, practice, or handoff. Evidence is reported, observed, or user-confirmed;
+preference, practice, mistake, or handoff. Evidence is reported, observed, or user-confirmed;
 it records the contributor's claim, not a cryptographic attestation. Use the least
 strong accurate value and label individual claims when evidence is mixed.
 
@@ -63,3 +63,31 @@ For corrections, link the replacement to the superseded entry and say why. For
 unresolved conflicts, retain both claims with their sources and ask only when the
 choice affects the present task. A forget request removes the content rather
 than preserving a superseded copy.
+
+## Mistakes and lessons
+
+Use `--kind mistake` for a compact record of an actual failed approach, preventable
+error, or user correction that is useful to future work. Record project-specific
+pitfalls under Known pitfalls in `projects/<slug>/overview.md`. Put reusable lessons
+in `mistakes.md`, retaining the conditions under which they apply. The helper can
+create that register with `publish mistakes.md --expected-sha missing` for older
+brains; `init` deliberately leaves existing brains unchanged.
+
+A curated lesson contains:
+
+- **ID and state:** a stable descriptive ID; active or superseded.
+- **Scope/trigger:** the project, platform, version, or situation where it applies.
+- **Failure and cause:** the observable symptom and confirmed cause; label an
+  unverified explanation suspected rather than treating it as established.
+- **Prevention and check:** what to do differently next time and how to verify it
+  worked. Include the recovery/fix when established.
+- **Evidence:** source incident links, what was actually checked, and last-checked date.
+
+Merge separate occurrences into the same lesson and add their source links.
+Do not claim repetition from multiple summaries of a single incident. A failed
+experiment with an unknown cause may be kept as a scoped warning to investigate,
+not a categorical prohibition. If current evidence invalidates a lesson, record
+the supersession and replacement rather than continuing to apply stale advice.
+
+Lessons describe technical events and prevention, not personal blame. Recording a
+lesson does not make its advice a user-adopted practice or authorize new actions.

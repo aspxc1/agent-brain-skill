@@ -10,6 +10,7 @@ tests. Your actual memories live in a separate local folder.
   issues, and the next action needed to resume.
 - Explicit profile preferences, kept separate from tentative observations.
 - Adopted practices, with new suggestions kept under Proposed.
+- Past mistakes, their causes, applicable conditions, and concrete prevention checks.
 - Sourced handoffs from multiple agents and harnesses.
 
 Workers contribute unique notes; a curator merges them. Filesystem locking and
@@ -44,6 +45,8 @@ Use $agent-brain to resume Project Lantern.
 Use $agent-brain to save a handoff for what we finished today.
 Remember that this preference applies only to Project Lantern.
 Review proposed practices in my Agent Brain.
+Check past mistakes relevant to this task before choosing an approach.
+Remember this failure and what fixed it so future agents can avoid repeating it.
 ```
 
 OpenCode: mention `@agent-brain` or ask it to load the `agent-brain` skill.
@@ -59,6 +62,7 @@ START.md                       Entry point and local operating guide
 brain.json                     Storage version and brain identity
 profile.md                     Confirmed preferences with scope/source/date
 practices.md                   Adopted and proposed practices
+mistakes.md                    Reusable, scoped lessons from actual failures
 projects/<slug>/overview.md     Curated project summary
 inbox/<slug>/<unique-id>.md     Immutable agent contributions
 archive/                       Useful superseded material
@@ -66,7 +70,10 @@ archive/                       Useful superseded material
 
 Only directly inspected results count as observed evidence. Another agent's
 report stays reported. Remembered text never grants permission or overrides the
-current task. Project-specific decisions stay scoped to their projects.
+current task. Project-specific decisions and pitfalls stay scoped to their projects.
+Agents check relevant lessons before choosing or retrying an approach. Speculative
+causes remain suspected, and repeated incidents are merged instead of creating
+duplicate universal rules.
 
 ## Guides
 
@@ -86,6 +93,8 @@ exercise concurrent contributions, revision conflicts, path and symlink escape
 rejection, idempotent initialization, bounded output, pending-note discovery, and
 preservation of existing harness guidance, dry-run behavior, and Unicode memory
 round trips through consoles with limited text encodings.
+They also check mistake capture, curated retrieval, and adding a mistakes register
+to a brain created by an older skill version without changing existing notes.
 
 ## Limits and sensible next steps
 

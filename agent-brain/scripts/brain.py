@@ -15,7 +15,7 @@ import uuid
 
 SKILL = Path(__file__).resolve().parents[1]
 SLUG = re.compile(r'^[a-z0-9]+(?:-[a-z0-9]+)*$')
-CANONICAL = re.compile(r'^(profile\.md|practices\.md|projects/[a-z0-9]+(?:-[a-z0-9]+)*/overview\.md)$')
+CANONICAL = re.compile(r'^(profile\.md|practices\.md|mistakes\.md|projects/[a-z0-9]+(?:-[a-z0-9]+)*/overview\.md)$')
 MAX_BODY = 100_000
 
 
@@ -167,7 +167,7 @@ def read_note(root, relative, max_chars):
 
 def publish(root, args):
     if not CANONICAL.fullmatch(args.target):
-        raise ValueError('Publish only profile.md, practices.md, or projects/<slug>/overview.md.')
+        raise ValueError('Publish only profile.md, practices.md, mistakes.md, or projects/<slug>/overview.md.')
     body = body_from(args.body_file)
     if args.expected_sha != 'missing' and not re.fullmatch(r'[0-9a-f]{64}', args.expected_sha):
         raise ValueError('Expected SHA must be the read command hash, or missing for a new note.')
@@ -182,7 +182,7 @@ def publish(root, args):
 
 def search(root, args):
     terms = args.query.casefold().split()
-    candidates = [root / 'profile.md', root / 'practices.md']
+    candidates = [root / 'profile.md', root / 'practices.md', root / 'mistakes.md']
     candidates += sorted((root / 'projects').glob('*/overview.md'))
     if args.include_pending:
         candidates += sorted((root / 'inbox').glob('*/*.md'), reverse=True)
@@ -230,7 +230,7 @@ def main():
     note = sub.add_parser('capture', help='Create a uniquely named immutable pending contribution.')
     for field in ('project', 'harness', 'agent', 'source', 'body-file'):
         note.add_argument('--' + field, required=True)
-    note.add_argument('--kind', choices=('session', 'decision', 'preference', 'practice', 'handoff'), default='session')
+    note.add_argument('--kind', choices=('session', 'decision', 'preference', 'practice', 'mistake', 'handoff'), default='session')
     note.add_argument('--evidence', choices=('reported', 'observed', 'user-confirmed'), default='reported')
     put = sub.add_parser('publish', help='Curator: compare revision and atomically publish one canonical note.')
     put.add_argument('target')

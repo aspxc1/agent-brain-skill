@@ -6,7 +6,9 @@ existing vault in Obsidian, or use any Markdown editor. It contains no Git remot
 ## Start a task
 
 Read [profile](profile.md) and relevant [practices](practices.md), then search
-`projects/` for the matching project. Load only the notes needed for the task.
+`projects/` for the matching project. Check relevant [mistakes and lessons](mistakes.md)
+and project Known pitfalls before choosing or repeating an approach. Match each
+lesson's scope and evidence to the live task. Load only the notes needed.
 Read `inbox/<project>/` only when checking recent handoffs or curating new material;
 those notes are pending observations, not automatically adopted rules.
 
@@ -16,6 +18,7 @@ those notes are pending observations, not automatically adopted rules.
 |---|---|
 | `profile.md` | Explicitly confirmed, durable preferences and relevant profile facts |
 | `practices.md` | Adopted practices, with suggestions kept under Proposed |
+| `mistakes.md` | Reusable, scoped failure lessons with causes, prevention, and evidence |
 | `projects/<slug>/overview.md` | Current project summary, decisions, evidence, next action |
 | `inbox/<slug>/<unique-id>.md` | Immutable agent contributions, including short session summaries |
 | `archive/` | Superseded material retained only when useful |

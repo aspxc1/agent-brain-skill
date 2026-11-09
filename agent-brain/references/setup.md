@@ -70,6 +70,11 @@ edits are rejected so they can be preserved first. The installer updates source
 files but does not delete obsolete installed files; inspect removed resources
 when changing skill versions. Keep personal path config and memory out of commits.
 
+For a brain initialized before `mistakes.md` existed, inspect whether the register
+is missing and create it with `publish mistakes.md --expected-sha missing` using
+the new template or sourced lessons. `init` does not modify existing brains; do
+not replace an existing register or other user notes when adding this file.
+
 To stop use, remove only the marked Agent Brain blocks from selected harness
 guidance and remove the installed skill directory after checking its exact path.
 The actual brain is separate and remains intact. No uninstall deletes memories.
