@@ -14,7 +14,7 @@ skill repository separate from the actual brain.
 Resolve the brain using an explicit task path, then `AGENT_BRAIN_ROOT`, then this
 skill's `brain.local.json`. The helper follows that order. If none is configured,
 ask for the intended folder; do not silently create competing brains. For first
-setup or a new harness, read [setup](references/setup.md).
+setup, relocation, or a new harness, read [setup](references/setup.md).
 
 Paths below are relative to this skill directory. Use an available Python 3.10+
 interpreter (`python`, `python3`, or `py -3`), checking it in the actual environment.
@@ -44,6 +44,12 @@ At a meaningful milestone, user correction, or handoff, save the outcome,
 decisions and reasons, actual evidence, unresolved issues, and next action. Prefer
 a short project summary over a transcript. Capture only projects visible in the
 current authorized context; never claim to have imported unseen chats.
+
+When this skill is loaded for substantive project work, perform relevant retrieval
+and useful milestone capture as part of that work without waiting for a separate
+remember request. At a new project's first useful checkpoint, the coordinating
+agent creates its concise overview; workers can contribute before that overview
+exists. No manual project registration is required.
 
 Use [memory format](references/memory-format.md) for the body. Write it to a UTF-8
 scratch file, then create a unique pending contribution:

@@ -225,6 +225,50 @@ class BrainTests(unittest.TestCase):
         self.assertTrue((home / '.config' / 'opencode' / 'AGENTS.md').is_file())
         self.assertFalse((home / '.claude' / 'CLAUDE.md').exists())
 
+    def test_rebinding_a_moved_brain_requires_previous_root_and_preserves_identity(self):
+        self.init()
+        identity = json.loads((self.root / 'brain.json').read_text(encoding='utf-8'))['brain_id']
+        home = self.base / 'portable-home'
+        command = [sys.executable, str(INSTALL), '--home', str(home), '--bootstrap', 'codex', 'opencode']
+        initial = subprocess.run(command + ['--brain', str(self.root)], text=True, capture_output=True)
+        self.assertEqual(initial.returncode, 0, initial.stderr)
+        original = self.root
+        moved = self.base / 'agent-neutral-brain'
+        self.assertEqual(original.resolve().parent, self.base.resolve())
+        self.assertEqual(moved.resolve().parent, self.base.resolve())
+        original.rename(moved)
+        refused = subprocess.run(command + ['--brain', str(moved)], text=True, capture_output=True)
+        self.assertNotEqual(refused.returncode, 0)
+        rebound = subprocess.run(command + ['--brain', str(moved), '--previous-root', str(original)],
+                                 text=True, capture_output=True)
+        self.assertEqual(rebound.returncode, 0, rebound.stderr)
+        skill = home / '.agents' / 'skills' / 'agent-brain'
+        manifest = json.loads((skill / 'install.local.json').read_text(encoding='utf-8'))
+        self.assertEqual(manifest['brain_id'], identity)
+        self.assertEqual(Path(manifest['root']), moved.resolve())
+        self.assertEqual(Path(json.loads((skill / 'brain.local.json').read_text())['root']), moved.resolve())
+        for rules in [home / '.codex' / 'AGENTS.md', home / '.config' / 'opencode' / 'AGENTS.md']:
+            text = rules.read_text(encoding='utf-8')
+            self.assertIn(str(moved.resolve()), text)
+            self.assertNotIn(str(original.resolve()), text)
+
+    def test_rebinding_refuses_an_unrelated_brain_without_changing_configuration(self):
+        self.init()
+        home = self.base / 'portable-home'
+        command = [sys.executable, str(INSTALL), '--home', str(home), '--bootstrap', 'codex', 'opencode']
+        first = subprocess.run(command + ['--brain', str(self.root)], text=True, capture_output=True)
+        self.assertEqual(first.returncode, 0, first.stderr)
+        unrelated = self.base / 'different-brain'
+        initialized = subprocess.run([sys.executable, str(CLI), '--root', str(unrelated), 'init'],
+                                     text=True, capture_output=True)
+        self.assertEqual(initialized.returncode, 0, initialized.stderr)
+        refused = subprocess.run(command + ['--brain', str(unrelated), '--previous-root', str(self.root)],
+                                 text=True, capture_output=True)
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn('identity', refused.stderr.lower())
+        config = home / '.agents' / 'skills' / 'agent-brain' / 'brain.local.json'
+        self.assertEqual(Path(json.loads(config.read_text())['root']), self.root.resolve())
+
 
 if __name__ == '__main__':
     unittest.main()

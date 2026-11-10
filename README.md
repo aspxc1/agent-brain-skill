@@ -36,6 +36,10 @@ refuses to overwrite locally edited installed resources.
 Open the separate brain folder as an existing vault in Obsidian, or use any text
 editor. No Obsidian plugins or application-specific Markdown are required.
 
+Choose an agent-neutral location outside a harness's project folders. The setup
+guide explains relocation using `--previous-root`; the installer verifies the
+existing brain's identity before rebinding shared memory pointers.
+
 ## Use
 
 Codex:

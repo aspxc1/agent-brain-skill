@@ -63,6 +63,48 @@ discovers the shared folder. The installer can add Claude's bootstrap with
 Claude skill-folder copy as a separate explicit setup step. Directly reading the
 absolute SKILL.md path from the bootstrap also works without native discovery.
 
+## Choose or move the brain folder
+
+Choose any agent-neutral folder the intended harnesses can read and write. The
+brain does not need to be under Codex, OpenCode, or the skill repository. All
+harnesses share memories only when their resolved roots identify the same store;
+different copies with the same folder name are separate stores.
+
+To move an existing brain while preserving its identity:
+
+1. Stop other writers. Rerun the current installer against the old root once so
+   its machine-local manifest records the existing `brain_id`.
+2. Move the whole folder, including `brain.json`, to an unused destination. Keep
+   its contents intact; do not run `init` to create a replacement brain.
+3. Rebind the shared skill and every installed harness bootstrap explicitly:
+
+   ```text
+   python agent-brain/scripts/install.py --brain "<new folder>" --previous-root "<old folder>" --bootstrap codex opencode
+   ```
+
+4. Check explicit task paths and any `AGENT_BRAIN_ROOT` overrides. Start fresh
+   harness sessions if startup guidance was already loaded with the old path.
+5. Run `brain.py status` from each configured entry point. Verify the same resolved
+   root and `brain_id`, then read back a saved contribution through both routes.
+
+`--previous-root` authorizes rebinding the same recorded brain, not switching to
+an unrelated one. The installer compares identities before modifying configuration.
+It updates the shared root config and selected bootstrap blocks; it does not move
+the folder itself or change sandbox permissions. Include Claude's bootstrap when
+Claude is actually installed. Existing unrelated guidance is preserved.
+
+## Automatic retrieval and saving
+
+With the bootstrap installed, a configured agent is instructed to load relevant
+project memories and scoped mistakes before substantive work, and save useful
+milestone/handoff summaries. It can create a project's contribution directory and
+curated overview as needed. No separate manual project registration is required.
+This remains instruction-driven behavior: it is not a background recorder of
+every conversation or a guarantee that a save ran. The harness must load the
+guidance and have file access. For a definite checkpoint, ask it to save a project
+handoff and report the saved path. Native OpenCode/Claude execution is verified
+only after observing those harnesses, not merely by reading their configuration.
+
 ## Updating and removing
 
 Edit the source repository, validate, then rerun the installer. Installed local

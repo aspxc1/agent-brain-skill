@@ -253,6 +253,7 @@ def main():
                 result = publish(root, args)
             else:
                 result = {'root': str(root), 'locked': (root / '.brain.lock').exists(),
+                          'brain_id': json.loads(confined(root, 'brain.json').read_text(encoding='utf-8'))['brain_id'],
                           'projects': len(list((root / 'projects').glob('*/overview.md'))),
                           'contributions': len(list((root / 'inbox').glob('*/*.md')))}
         # ASCII-safe JSON survives Windows code pages; json.loads restores Unicode.

@@ -50,6 +50,7 @@ If the brain is unavailable, continue the task and report any unsaved handoff.
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--brain', required=True, help='Existing local brain, separate from the skill repository.')
+    p.add_argument('--previous-root', help='Explicit old root after moving the same brain; its recorded identity must match.')
     p.add_argument('--home', help='Override the user home for isolated testing or portable installation.')
     p.add_argument('--bootstrap', nargs='*', choices=('codex', 'opencode', 'claude'), default=[])
     p.add_argument('--dry-run', action='store_true')
@@ -57,6 +58,7 @@ def main():
     try:
         brain = Path(args.brain).expanduser().resolve()
         require_brain(brain)
+        brain_id = json.loads((brain / 'brain.json').read_text(encoding='utf-8'))['brain_id']
         home = Path(args.home).expanduser().resolve() if args.home else Path.home().resolve()
         codex_home = Path(os.environ.get('CODEX_HOME', str(home / '.codex'))).expanduser().resolve() if not args.home else home / '.codex'
         config_home = Path(os.environ.get('XDG_CONFIG_HOME', str(home / '.config'))).expanduser().resolve() if not args.home else home / '.config'
@@ -67,8 +69,14 @@ def main():
         old = json.loads(manifest_path.read_text(encoding='utf-8')) if manifest_path.exists() else {}
         if dest.exists() and any(dest.iterdir()) and not old:
             raise ValueError('Existing unmanaged agent-brain skill found. Refusing to overwrite it.')
+        if old.get('brain_id') and old['brain_id'] != brain_id:
+            raise ValueError('Brain identity differs from the installed brain; refusing to switch memories.')
         if old.get('root') and Path(old['root']).resolve() != brain:
-            raise ValueError('Installed skill points to another brain. Review before changing its root.')
+            previous = Path(args.previous_root).expanduser().resolve() if args.previous_root else None
+            if previous != Path(old['root']).resolve():
+                raise ValueError('Installed skill points elsewhere. For a moved brain, explicitly pass --previous-root.')
+            if not old.get('brain_id'):
+                raise ValueError('No recorded brain identity. Update the installation at its original root before moving it.')
         files = [x for x in SOURCE.rglob('*') if x.is_file()
                  and '__pycache__' not in x.parts and x.suffix != '.pyc'
                  and not x.name.endswith('.local.json') and x.name != 'brain.local.json']
@@ -94,14 +102,14 @@ def main():
             updated = bootstrap_text(current, dest, brain)
             if current != updated:
                 updates.append((path, current, updated))
-        report = {'skill': str(dest), 'brain': str(brain), 'files': len(files),
+        report = {'skill': str(dest), 'brain': str(brain), 'brain_id': brain_id, 'files': len(files),
                   'bootstrap_updates': [str(x[0]) for x in updates], 'dry_run': args.dry_run}
         if not args.dry_run:
             for src in files:
                 target = safe_destination(dest, src.relative_to(SOURCE))
                 atomic_write(target, desired[src.relative_to(SOURCE).as_posix()])
             atomic_write(safe_destination(dest, 'brain.local.json'), json.dumps({'root': str(brain)}, indent=2) + '\n')
-            atomic_write(manifest_path, json.dumps({'root': str(brain), 'source': str(SOURCE),
+            atomic_write(manifest_path, json.dumps({'root': str(brain), 'brain_id': brain_id, 'source': str(SOURCE),
                          'files': desired_hashes}, indent=2) + '\n')
             for path, current, updated in updates:
                 if current:
